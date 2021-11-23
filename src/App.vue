@@ -1,26 +1,46 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
-</template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { useField } from "vee-validate";
+import * as yup from "yup";
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+
+  setup() {
+    const onSubmit = () => {
+      console.log("submit here");
+    };
+
+    // 定義規則內容
+    // function isRequired(value) {
+    //   if (value && value.trim()) {
+    //     return true;
+    //   }
+    //   return "This is required";
+    // }
+
+    // {錯誤訊息，驗證內容}
+    const { errorMessage, value } = useField(
+      "fieldInput",
+      yup.string().required().min(8)
+    );
+
+    return { onSubmit, errorMessage, value };
+  },
+};
 </script>
 
+<template>
+  <div id="app">
+    <form @submit.prevent="onSubmit">
+      <input type="text" name="text" v-model="value" />
+      <span display:inline-block>{{ errorMessage }}</span>
+      <button>Sign up for newsletter</button>
+    </form>
+  </div>
+</template>
+
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+span {
+  display: block;
 }
 </style>
