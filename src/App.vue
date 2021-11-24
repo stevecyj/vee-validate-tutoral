@@ -1,4 +1,5 @@
 <script>
+import { computed } from 'vue';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 
@@ -27,10 +28,58 @@ export default {
     });
     useForm({ validationSchema: simpleSchema });
 
-    const { value: name, errorMessage: nameError } = useField('name');
-    const { value: email, errorMessage: emailError } = useField('email');
+    // 加入 handleBlur
+    const validationListenersName = computed(() => {
+      // If the field is valid or have not been validated yet
+      // lazy
+      if (!errorMessage.value) {
+        return {
+          blur: handleChangeName,
+          change: handleChangeName,
+          // disable `shouldValidate` to avoid validating on input
+          input: (e) => handleChangeName(e, false),
+        };
+      }
+      // Aggressive
+      return {
+        blur: handleChangeName,
+        change: handleChangeName,
+        input: handleChangeName, // only switched this
+      };
+    });
+    const validationListenersEmail = computed(() => {
+      // If the field is valid or have not been validated yet
+      // lazy
+      if (!errorMessage.value) {
+        return {
+          blur: handleChangeEmail,
+          change: handleChangeEmail,
+          // disable `shouldValidate` to avoid validating on input
+          input: (e) => handleChangeEmail(e, false),
+        };
+      }
+      // Aggressive
+      return {
+        blur: handleChangeEmail,
+        change: handleChangeEmail,
+        input: handleChangeEmail, // only switched this
+      };
+    });
 
-    return { onSubmit, errorMessage, value, name, nameError, email, emailError };
+    const { value: name, errorMessage: nameError, handleChange: handleChangeName } = useField('name');
+    const { value: email, errorMessage: emailError, handleChange: handleChangeEmail } = useField('email');
+
+    return {
+      onSubmit,
+      errorMessage,
+      value,
+      name,
+      nameError,
+      email,
+      emailError,
+      validationListenersName,
+      validationListenersEmail,
+    };
   },
 };
 </script>
@@ -39,11 +88,11 @@ export default {
   <div id="app">
     <form @submit.prevent="onSubmit">
       <label for="name">name</label>
-      <input id="name" type="text" name="text" v-model="name" />
+      <input id="name" type="text" name="text" v-model="name" v-on="validationListenersName" />
       <span display:inline-block>{{ nameError }}</span>
       <!-- separate -->
       <label for="email">email</label>
-      <input id="email" name="email" v-model="email" />
+      <input id="email" name="email" v-model="email" v-on="validationListenersEmail" />
       <span>{{ emailError }}</span>
       <button>Sign up for newsletter</button>
     </form>
